@@ -1,0 +1,22 @@
+{
+"apiVersion": "V1",
+"assemblies": [
+{
+  "files": [
+    {
+      "filePath": "protein.faa",
+      "fileType": "PROTEIN_FASTA",
+      "uncompressedLengthBytes": "32060"
+    },
+    {
+      "filePath": "data_report.jsonl",
+      "fileType": "DATA_REPORT",
+      "uncompressedLengthBytes": "33837"
+    },
+    {
+      "filePath": "virus_dataset.md",
+      "fileType": "README",
+      "uncompressedLengthBytes": "2398"
+    }
+  ]
+}]}
