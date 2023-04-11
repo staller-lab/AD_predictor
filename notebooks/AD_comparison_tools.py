@@ -54,7 +54,7 @@ def count_occurrences_in_series(df_column):
 def add_occurrence_count(df,column_name):
     df["times_"+column_name+"_predicted"]=count_occurrences_in_series(df[column_name])
 
-#Drops duplicate ProteinRegionSeqs in the input dataframe; updates Start, End, Length; and merges the original descriptions.
+# Drops duplicate ProteinRegionSeqs in the input dataframe; updates Start, End, Length; and merges the original descriptions.
 # def remove_duplicate_sequences(df):
 
 # Helper function, source: https://stackoverflow.com/questions/27182137/check-if-two-lines-each-with-start-end-positions-overlap-in-python
@@ -254,3 +254,107 @@ def GSL_count(orig_preds, GSL_filepath = "../data/newGSL.csv"):
     print(str(round(ours_GSL/ours_len, 3))+", or, "+str(ours_GSL)+
       " out of "+str(ours_len)+" predictions made by us are on the gold standard list.")
     return ours_GSL
+
+
+# +
+# To merge lists of ADs (ex. the GSL and Soto)
+
+# Helper function: returns merged row
+def return_merged_row(uniprotID, df):
+    # Only look at rows with the same uniprot ID
+    same_uniprotID_rows = df[df["uniprotID"] == uniprotID]
+    same_uniprotID_rows = same_uniprotID_rows.sort_values(by = "Start")
+    
+    # Final dataframe columns
+    new_starts = []
+    new_ends = []
+    genes = []
+    AD_names = []
+    references = []
+    orig_lists = []
+    
+    # Current row's values
+    curr_start = -1
+    curr_end = -1
+    curr_genes = []
+    curr_AD_names = []
+    curr_references = []
+    curr_lists = []
+    
+    for i in same_uniprotID_rows.index:
+        # Merge current row with next row
+        if curr_end >= same_uniprotID_rows.loc[i]["Start"]:
+            curr_end = max(curr_end, same_uniprotID_rows.loc[i]["End"])
+            curr_genes.append(same_uniprotID_rows.loc[i]["GeneName"])
+            curr_AD_names.append(same_uniprotID_rows.loc[i]["AD name"])
+            curr_references.append(same_uniprotID_rows.loc[i]["Reference"])
+            curr_lists.append(same_uniprotID_rows.loc[i]["List"])
+        
+        # Don't merge current row with next row
+        else: 
+            new_starts.append(curr_start)
+            new_ends.append(curr_end)
+            genes.append(" / ".join(set([c.strip() for c in curr_genes])))
+            
+            curr_AD_names = [str(c) for c in curr_AD_names]
+            AD_names.append(" / ".join(curr_AD_names))
+            
+            curr_references = [str(c) for c in curr_references]
+            references.append(" / ".join(curr_references))
+            
+            curr_lists = [str(c) for c in curr_lists]
+            orig_lists.append(" / ".join(curr_lists))
+            
+            curr_start = same_uniprotID_rows.loc[i]["Start"]
+            curr_end = same_uniprotID_rows.loc[i]["End"]
+            
+            curr_genes = [same_uniprotID_rows.loc[i]["GeneName"]]
+            curr_AD_names = [same_uniprotID_rows.loc[i]["AD name"]]
+            curr_references = [same_uniprotID_rows.loc[i]["Reference"]]
+            curr_lists = [same_uniprotID_rows.loc[i]["List"]]
+    
+    # Append the last values
+    new_starts.append(curr_start)
+    new_ends.append(curr_end)
+    
+    genes.append(" / ".join(set([c.strip() for c in curr_genes])))
+    
+    curr_AD_names = [str(c) for c in curr_AD_names]
+    AD_names.append(" / ".join(curr_AD_names))
+    
+    curr_references = [str(c) for c in curr_references]
+    references.append(" / ".join(curr_references))
+    
+    curr_lists = [str(c) for c in curr_lists]
+    orig_lists.append(" / ".join(curr_lists))
+    
+    # Remove the first (because it is just -1 or "")
+    new_starts = new_starts[1:]
+    new_ends = new_ends[1:]
+    genes = genes[1:]
+    AD_names = AD_names[1:]
+    references = references[1:]
+    orig_lists = orig_lists[1:]
+    
+    return pd.DataFrame({"GeneName": genes,
+                         "AD name": AD_names,
+                         "Start": new_starts,
+                        "End": new_ends,
+                        "uniprotID": uniprotID,
+                         "Reference": references,
+                         "List": orig_lists
+                        })
+
+# Input: list of dataframes with "GeneName", "AD name", "Start", "End", "uniprotID", "Reference" columns
+# Output: one dataframe with merged entries (merges entries with any overlap)
+def return_merged_list(df_list):
+    both_lists = pd.concat(df_list)
+    both_lists = both_lists.reset_index(drop = True)
+    dfs = []
+    for uniprotID in both_lists["uniprotID"].unique():
+        dfs.append(return_merged_row(uniprotID, both_lists))
+    new_GSL = pd.concat(dfs)
+    return new_GSL.sort_values(by = "uniprotID").reset_index(drop = True)
+# -
+
+
