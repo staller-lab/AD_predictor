@@ -394,6 +394,57 @@ def AggregateTilesIntoPredictedADs(inputfilename, Sequences_to_Test_DF,TEMPindx,
 
     return CandidateADsToTest
 
+# +
+# Function to not combine the Predicted Tiles, just return tiles of predicted ADs--look for overlapping tiles
+def TilesOfPredictedADs(inputfilename, Sequences_to_Test_DF, TEMPindx, exportfilename):
+    print("Returning tiles that have not been aggregated!")
+    CombinedPredictions = Sequences_to_Test_DF[TEMPindx]
+    return CombinedPredictions
+#     genenames, starts,ends, seqs,regionlengths,RegionType = [],[],[],[],[],[]
+#     for gene in set(CombinedPredictions.GeneName):
+#         indx = CombinedPredictions.GeneName == gene
+#         tempDF = CombinedPredictions[indx]
+#         tempDF = tempDF.reset_index()
+#         display(tempDF)
+#         start, end = min(tempDF.StartPosition)+1,max(tempDF.EndPosition)
+#         starts.append(start)
+#         ends.append(end)
+#         regionlengths.append(end-start)
+#         genenames.append(gene)
+#         RegionType.append('Prediction')
+
+#     # make a DF with geneNames and start and End positions of the overlapping windows
+#     CandidateADsToTest = pd.DataFrame({'GeneName':genenames,'Start':starts,'End':ends,'Length':regionlengths,'RegionType':RegionType})
+
+#     #add a column for full length AA seq
+#     FullLengthProteinsTested = makeFullLengthProteinDF(inputfilename)
+
+#     #print(FullLengthProteinsTested)
+#     tempDict = dict(zip(FullLengthProteinsTested.GeneName,FullLengthProteinsTested.AAseq))
+#     print(len(tempDict))
+#     tempSeries = CandidateADsToTest.GeneName
+#     print(tempSeries)
+#     CandidateADsToTest['FullProteinSeq'] = tempSeries.map(tempDict)
+
+
+#     ## pull out regions of these TFs
+#     # CandidateADsToTest['Region2Test'] = CandidateADsToTest.apply(lambda row: row.FullProteinSeq[row.Start:row.End], axis=1)
+#     #correct for counting starting at 0 in python and 1 in real world
+#     ProteinRegionSeqs =[]
+#     for i, Start, End, FullProteinSeq in zip(range(len(CandidateADsToTest.index)),CandidateADsToTest["Start"],CandidateADsToTest["End"],CandidateADsToTest["FullProteinSeq"]):
+#         start =Start
+#         end = End
+#         Region = FullProteinSeq[start:end]
+#         ProteinRegionSeqs.append(Region)
+#     CandidateADsToTest['ProteinRegionSeq']=ProteinRegionSeqs
+#     CandidateADsToTest = CandidateADsToTest.drop(['FullProteinSeq'], axis=1)
+
+#     #print("Saving output to: "+'../output/'+exportfilename)
+#     #CandidateADsToTest.to_csv('../output/'+exportfilename)
+
+#     return CandidateADsToTest
+# -
+
 def make_predictions(folder_name="predictions/",
                         inputfilename="../data/LambertTFs.fasta", 
                         slope=1,
@@ -405,7 +456,8 @@ def make_predictions(folder_name="predictions/",
                         window_size=39,
                         window_spacing=1,
                         propset=["Charge","AllHydros"],
-                        plot_new_red_points = True):
+                        plot_new_red_points = True,
+                        aggregate = True):
     
     exportfilename=return_exportfilename(folder_name,
                         inputfilename, 
@@ -433,8 +485,10 @@ def make_predictions(folder_name="predictions/",
     PredictedTiles = maskproteome(inputfilename,composition, Sequences_to_Test, LowerCorner_slope1, LowerCorner_slope2,
                         UpperCorner_slope1, UpperCorner_slope2, slope, lineparameters=[[lower_corner_c,lower_corner_h],[upper_corner_c,upper_corner_h]],propset=["Charge","AllHydros"],
                         window_size = window_size, plot_new_red_points = plot_new_red_points)
-    
-    return AggregateTilesIntoPredictedADs(inputfilename, Sequences_to_Test,PredictedTiles,exportfilename)
+    if aggregate == True:
+        return AggregateTilesIntoPredictedADs(inputfilename, Sequences_to_Test,PredictedTiles,exportfilename)
+    else:
+        return TilesOfPredictedADs(inputfilename, Sequences_to_Test,PredictedTiles,exportfilename)
 
 def get_bounds(AD_name,composition):
 
