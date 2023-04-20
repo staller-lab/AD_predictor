@@ -164,51 +164,32 @@ def plot_one_heatmap(tiled_df, label, x = "Charge", c = "log10count", cmap = "Gr
 
     pivot_tbl =  pd.crosstab(tiled_df['Charge'], tiled_df['AllHydros'], dropna = False )
     pivot_tbl = pivot_tbl.T
-    if x_min < min(pivot_tbl.columns):
-        # Add x_min to min columns of zeros
-        print(min(pivot_tbl.columns))
-        columns = range(x_min, min(pivot_tbl.columns))
-        add_to_df = pd.DataFrame([np.zeros(min(pivot_tbl.columns) - x_min) for i in range(len(pivot_tbl.index))])
-        add_to_df.columns = columns
-        add_to_df.index = pivot_tbl.index
-        pivot_tbl = pd.concat([add_to_df, pivot_tbl], axis = 1)
-
-    if x_max > max(pivot_tbl.columns):
-        # Add max to x max columns of zeros
-        n = (x_max + 1) - (max(pivot_tbl.columns) + 1)
-        columns = range(max(pivot_tbl.columns) + 1, x_max + 1)
-        add_to_df = pd.DataFrame([np.zeros(n) for i in range(len(pivot_tbl.index))])
-        add_to_df.columns = columns
-        add_to_df.index = pivot_tbl.index
-        pivot_tbl = pd.concat([pivot_tbl, add_to_df], axis = 1)
-
-    if y_min < min(pivot_tbl.index):
-        # Add y_min to min rows of zeros
-        rows = range(y_min, min(pivot_tbl.index))
-        add_to_df = pd.DataFrame([np.zeros(len(pivot_tbl.columns)) for i in range(min(pivot_tbl.index) - y_min)])
-        add_to_df.columns = pivot_tbl.columns
-        add_to_df.index = rows
-        pivot_tbl = pd.concat([add_to_df, pivot_tbl])
-
-    if y_max > max(pivot_tbl.index):
-        # Add max to y max rows of zeros
-        print("adding rows!")
-        rows = range(max(pivot_tbl.index) + 1, y_max + 1)
-        print(rows)
-        add_to_df = pd.DataFrame([np.zeros(len(pivot_tbl.columns)) for i in range(y_max - max(pivot_tbl.index))])
-        add_to_df.columns = pivot_tbl.columns
-        add_to_df.index = rows
-        pivot_tbl = pd.concat([pivot_tbl, add_to_df])
+    
+    end_x_min = min(min(pivot_tbl.columns), x_min)
+    end_x_max = max(max(pivot_tbl.columns), x_max)
+    end_y_min = min(min(pivot_tbl.index), y_min)
+    end_y_max = max(max(pivot_tbl.index), y_max)
+    
+    # Add columns to pivot table    
+    for i in range(end_x_min, end_x_max + 1):
+        if i not in pivot_tbl.columns:
+            pivot_tbl[column_name] = np.zeros(len(pivot_tbl))
+    
+    #Add rows to pivot table
+    for i in range(end_y_min, end_y_max + 1):
+        if i not in pivot_tbl.index:
+            pivot_tbl.loc[row_index] = np.zeros(len(pivot_tbl.columns))
 
     if seaborn: 
         pivot_tbl = pivot_tbl.sort_index()
-        display(pivot_tbl)
-        print(pivot_tbl.columns)
+        pivot_tbl = pivot_tbl.sort_index(axis = 1)
+        
         ax = sns.heatmap(pivot_tbl, cmap = cmap, norm=LogNorm(), square = True)
         ax.invert_yaxis() 
+        
         plt.xticks(rotation=0)
         plt.yticks(rotation=0)
-        print(ax.get_xticks())
+
         ax.set_xticks(ax.get_xticks()[::2])
         ax.set_yticks(ax.get_yticks()[::2])
 
