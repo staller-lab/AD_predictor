@@ -140,8 +140,7 @@ def tile_and_plot(column, tiled_Lambert, tiled_GS_list, tiled_proteome = 0, figs
     if show:
         plt.show()
 
-    
-    
+
 # Returns probability of each X, Y pair in tiled_df
 def tiled_df_to_abundance_df(tiled_df, X_val = "Charge", Y_val = "AllHydros"):
     abundance_series = tiled_df.groupby([X_val, Y_val]).size()
@@ -167,6 +166,7 @@ def plot_one_heatmap(tiled_df, label, x = "Charge", c = "log10count", cmap = "Gr
     pivot_tbl = pivot_tbl.T
     if x_min < min(pivot_tbl.columns):
         # Add x_min to min columns of zeros
+        print(min(pivot_tbl.columns))
         columns = range(x_min, min(pivot_tbl.columns))
         add_to_df = pd.DataFrame([np.zeros(min(pivot_tbl.columns) - x_min) for i in range(len(pivot_tbl.index))])
         add_to_df.columns = columns
@@ -175,8 +175,9 @@ def plot_one_heatmap(tiled_df, label, x = "Charge", c = "log10count", cmap = "Gr
 
     if x_max > max(pivot_tbl.columns):
         # Add max to x max columns of zeros
-        columns = range(max(pivot_tbl.columns), x_max)
-        add_to_df = pd.DataFrame([np.zeros(x_max - max(pivot_tbl.columns)) for i in range(len(pivot_tbl.index))])
+        n = (x_max + 1) - (max(pivot_tbl.columns) + 1)
+        columns = range(max(pivot_tbl.columns) + 1, x_max + 1)
+        add_to_df = pd.DataFrame([np.zeros(n) for i in range(len(pivot_tbl.index))])
         add_to_df.columns = columns
         add_to_df.index = pivot_tbl.index
         pivot_tbl = pd.concat([pivot_tbl, add_to_df], axis = 1)
@@ -190,8 +191,10 @@ def plot_one_heatmap(tiled_df, label, x = "Charge", c = "log10count", cmap = "Gr
         pivot_tbl = pd.concat([add_to_df, pivot_tbl])
 
     if y_max > max(pivot_tbl.index):
-        # Add max to y max rows of zeros]
-        rows = range(max(pivot_tbl.index), y_max)
+        # Add max to y max rows of zeros
+        print("adding rows!")
+        rows = range(max(pivot_tbl.index) + 1, y_max + 1)
+        print(rows)
         add_to_df = pd.DataFrame([np.zeros(len(pivot_tbl.columns)) for i in range(y_max - max(pivot_tbl.index))])
         add_to_df.columns = pivot_tbl.columns
         add_to_df.index = rows
@@ -199,10 +202,13 @@ def plot_one_heatmap(tiled_df, label, x = "Charge", c = "log10count", cmap = "Gr
 
     if seaborn: 
         pivot_tbl = pivot_tbl.sort_index()
+        display(pivot_tbl)
+        print(pivot_tbl.columns)
         ax = sns.heatmap(pivot_tbl, cmap = cmap, norm=LogNorm(), square = True)
         ax.invert_yaxis() 
         plt.xticks(rotation=0)
         plt.yticks(rotation=0)
+        print(ax.get_xticks())
         ax.set_xticks(ax.get_xticks()[::2])
         ax.set_yticks(ax.get_yticks()[::2])
 
