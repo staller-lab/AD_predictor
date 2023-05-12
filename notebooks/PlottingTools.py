@@ -165,20 +165,20 @@ def plot_one_heatmap(tiled_df, label, x = "Charge", c = "log10count", cmap = "Gr
     pivot_tbl =  pd.crosstab(tiled_df['Charge'], tiled_df['AllHydros'], dropna = False )
     pivot_tbl = pivot_tbl.T
     
-    end_x_min = min(min(pivot_tbl.columns), x_min)
-    end_x_max = max(max(pivot_tbl.columns), x_max)
-    end_y_min = min(min(pivot_tbl.index), y_min)
-    end_y_max = max(max(pivot_tbl.index), y_max)
+    end_x_min = int(min(min(pivot_tbl.columns), x_min))
+    end_x_max = int(max(max(pivot_tbl.columns), x_max))
+    end_y_min = int(min(min(pivot_tbl.index), y_min))
+    end_y_max = int(max(max(pivot_tbl.index), y_max))
     
     # Add columns to pivot table    
     for i in range(end_x_min, end_x_max + 1):
         if i not in pivot_tbl.columns:
-            pivot_tbl[column_name] = np.zeros(len(pivot_tbl))
+            pivot_tbl[i] = np.zeros(len(pivot_tbl))
     
     #Add rows to pivot table
     for i in range(end_y_min, end_y_max + 1):
         if i not in pivot_tbl.index:
-            pivot_tbl.loc[row_index] = np.zeros(len(pivot_tbl.columns))
+            pivot_tbl.loc[i] = np.zeros(len(pivot_tbl.columns))
 
     if seaborn: 
         pivot_tbl = pivot_tbl.sort_index()
@@ -261,7 +261,7 @@ def plot_line(point1, point2, color = "b", lw = 3, alpha = 1, seaborn = False):
 def return_line_y_coords(x_min, x_max, func):
         return [func(x) for x in np.arange(x_min, x_max)]
 
-def plot_VP16_CITED2(c = "r", marker = "o", markersize = 5, alpha = 1, seaborn = False):
+def plot_VP16_CITED2(c = "r", marker1 = "o", marker2 = "*", marker1size = 2.5, marker2size= 4, alpha = 1, seaborn = False):
     # plt.plot(-13, 7, c = c, marker = marker, markersize = markersize, alpha = alpha)
     # plt.plot(-9, 10, c = c, marker = marker, markersize = markersize, alpha = alpha)
 
@@ -275,8 +275,8 @@ def plot_VP16_CITED2(c = "r", marker = "o", markersize = 5, alpha = 1, seaborn =
         x1 += 39
         x2 += 39
 
-    plt.plot(x1, y1, c = c, marker = marker, markersize = markersize, alpha = alpha)
-    plt.plot(x2, y2, c = c, marker = marker, markersize = markersize, alpha = alpha)
+    plt.plot(x1, y1, c = c, marker = marker1, markersize = marker1size, alpha = alpha)
+    plt.plot(x2, y2, c = c, marker = marker2, markersize = marker2size, alpha = alpha)
 
 def plot_boundary_lines(alpha = 1, lw = 3, seaborn = False, orig_predictor_only = False, with_EF = False, color = 'b', new_predictor = False):
     neg_thirteen = -13
