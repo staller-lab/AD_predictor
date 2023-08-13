@@ -1,2 +1,4 @@
 data/tiled_proteome.csv
 notebooks/.ipynb_checkpoints
+data/TilingDFs
+data/temp*

@@ -41,7 +41,13 @@ def add_charge(df):
 def add_allhydros(df):
     df['AllHydros'] = df["W"] + df["F"] + df["Y"] + df["L"]
 
-def tile_and_plot(column, tiled_Lambert, tiled_GS_list, tiled_proteome = 0, figsize=(6,4), dpi=80, xtick_interval=10, xtick_labelsize=10, bins_interval=10, ylabel = True, path_to_save = False, title = True, legend = True, xlabel = False, alpha = 0.7, element = "bars", fill = True, first_list = "Lambert", second_list = "GSL", show = True, new_figure = True, use_matplotlib = False, mid_bin_label = True):
+def tile_and_plot(column, tiled_Lambert, tiled_GS_list, tiled_proteome = 0, figsize=(6,4), 
+                  dpi=80, xtick_interval=10, xtick_labelsize=10, bins_interval=10, 
+                  ylabel = True, path_to_save = False, title = True, 
+                  legend = True, legend_outside = False, xlabel = False, alpha = 0.7, element = "bars", 
+                  fill = True, first_list = "Lambert TFs", second_list = "Gold Standard List", 
+                  third_list = "Proteome",
+                  show = True, new_figure = True, use_matplotlib = False, mid_bin_label = True, custom_title = False):
     if new_figure:
         figure(figsize = figsize, dpi=dpi)
 
@@ -96,12 +102,12 @@ def tile_and_plot(column, tiled_Lambert, tiled_GS_list, tiled_proteome = 0, figs
     #tiled_GS_list[column].hist(bins=bins, alpha=alpha, grid=False, weights=np.ones(len(tiled_GS_list.index)) / len(tiled_GS_list.index),label="Gold Standard List", color = GSL_color)
     if use_matplotlib:    
         matplotlib.rc_file_defaults()
-        plt.hist(tiled_Lambert[column], bins=bins, alpha=alpha, density = True,label="Lambert TFs", color = LambertTFs_color)
-        plt.hist(tiled_GS_list[column], bins=bins, alpha=alpha, density = True,label="Gold Standard List", color = GSL_color)
+        plt.hist(tiled_Lambert[column], bins=bins, alpha=alpha, density = True,label= first_list, color = LambertTFs_color)
+        plt.hist(tiled_GS_list[column], bins=bins, alpha=alpha, density = True,label= second_list, color = GSL_color)
 
     else:
-        sns.histplot(tiled_Lambert, element = element, fill = fill, x= column, bins = bins, weights=np.ones(len(tiled_Lambert.index)) / len(tiled_Lambert.index),label="Lambert TFs", color = LambertTFs_color, alpha = alpha)
-        sns.histplot(tiled_GS_list, element = element, fill = fill, x= column, bins = bins, weights=np.ones(len(tiled_GS_list.index)) / len(tiled_GS_list.index),label="Gold Standard List", color = GSL_color, alpha = alpha)
+        sns.histplot(tiled_Lambert, element = element, fill = fill, x= column, bins = bins, weights=np.ones(len(tiled_Lambert.index)) / len(tiled_Lambert.index),label=first_list, color = LambertTFs_color, alpha = alpha)
+        sns.histplot(tiled_GS_list, element = element, fill = fill, x= column, bins = bins, weights=np.ones(len(tiled_GS_list.index)) / len(tiled_GS_list.index),label=second_list, color = GSL_color, alpha = alpha)
 
     #tiled_Lambert["group"] = first_list
     #tiled_GS_list["group"] = second_list
@@ -111,7 +117,7 @@ def tile_and_plot(column, tiled_Lambert, tiled_GS_list, tiled_proteome = 0, figs
         #tiled_proteome["group"] = "proteome"
         #lot_df =  AD_comparison_tools.df_list_to_df([plot_df, tiled_proteome])     
         if use_matplotlib:   
-            plt.hist(tiled_proteome[column], bins=bins, alpha=alpha, density = True,label="Proteome", color = proteome_color)
+            plt.hist(tiled_proteome[column], bins=bins, alpha=alpha, density = True,label=third_list, color = proteome_color)
 
             sns.set_theme()
         else:
@@ -130,15 +136,23 @@ def tile_and_plot(column, tiled_Lambert, tiled_GS_list, tiled_proteome = 0, figs
         plt.xlabel(xlabel)
     
     if legend:
-        plt.legend()
+        if legend_outside: 
+            plt.legend(loc=(1.04, 0.6))
+
+        else:
+            plt.legend()
 
     #plt.axvline(0, color = 'gray', linestyle = '--', lw = 1)
 
+    if custom_title:
+        plt.title(custom_title)
+    
     if path_to_save:
         plt.savefig(path_to_save)
 
     if show:
         plt.show()
+
 
 
 # Returns probability of each X, Y pair in tiled_df
