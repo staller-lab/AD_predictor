@@ -371,11 +371,12 @@ def AggregateTilesIntoPredictedADs(inputfilename, Sequences_to_Test_DF,TEMPindx,
 
     #print(FullLengthProteinsTested)
     tempDict = dict(zip(FullLengthProteinsTested.GeneName,FullLengthProteinsTested.AAseq))
-    print(len(tempDict))
-    tempSeries = CandidateADsToTest.GeneName
-    print(tempSeries)
+    #print(len(tempDict))
+    #print(tempDict.keys())
+    tempSeries = CandidateADsToTest.GeneName.astype(str)
+    #print(tempSeries)
     CandidateADsToTest['FullProteinSeq'] = tempSeries.map(tempDict)
-
+    #print(CandidateADsToTest['FullProteinSeq'])
 
     ## pull out regions of these TFs
     # CandidateADsToTest['Region2Test'] = CandidateADsToTest.apply(lambda row: row.FullProteinSeq[row.Start:row.End], axis=1)
@@ -384,6 +385,9 @@ def AggregateTilesIntoPredictedADs(inputfilename, Sequences_to_Test_DF,TEMPindx,
     for i, Start, End, FullProteinSeq in zip(range(len(CandidateADsToTest.index)),CandidateADsToTest["Start"],CandidateADsToTest["End"],CandidateADsToTest["FullProteinSeq"]):
         start =Start
         end = End
+        #display(CandidateADsToTest)
+        #print("seq")
+        #print(FullProteinSeq)
         Region = FullProteinSeq[start:end]
         ProteinRegionSeqs.append(Region)
     CandidateADsToTest['ProteinRegionSeq']=ProteinRegionSeqs
